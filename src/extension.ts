@@ -3,6 +3,8 @@
 import { get } from 'http';
 import * as vscode from 'vscode';
 
+
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -77,6 +79,10 @@ function openYellowSnowView(document: vscode.TextDocument) {
 		this.green = green;
 		this.blue = blue;
 	}
+
+	toHex() {
+		return `#${this.red.toString(16).padStart(2, "0")}${this.green.toString(16).padStart(2, "0")}${this.blue.toString(16).padStart(2, "0")}`;
+	}
   }
 
   class Theme {
@@ -97,7 +103,7 @@ function openYellowSnowView(document: vscode.TextDocument) {
   
 const themes = {
 	"Yellow Snow": new Theme("YS", new Color(0, 0, 0), new Color(0, 0, 0), new Color(255, 255, 255), new Color(255, 255, 0)),
-	"Purple Stain": new Theme("PS", new Color(255, 255, 255), new Color(255, 255, 0), new Color(48, 48, 48), new Color(87, 38, 128))
+	"Purple Stain": new Theme("PS", new Color(255, 255, 255), new Color(255, 255, 0), new Color(29, 12, 40), new Color(87, 38, 128))
 };
 
 function getBGColor(theme: Theme, level: number) {
@@ -116,14 +122,18 @@ function getFGColor(theme: Theme, level: number) {
 	
 function getColor(level: number, from: Color, to: Color) {
 
+	if (level < 0 || level > 255) {
+		throw new Error(`Invalid level: ${level}`);
+	}
+
 	var dR = (to.red - from.red);
 	var dG = (to.green - from.green);
 	var dB = (to.blue - from.blue);
 
 	var l = level / 255.0;
-	var r = dR * l + from.red;
-	var g = dG * l + from.green;
-	var b = dB * l + from.blue;
+	var r = Math.floor(dR * l + from.red);
+	var g = Math.floor(dG * l + from.green);
+	var b = Math.floor(dB * l + from.blue);
 
 	return new Color(r, g, b);
 }
@@ -135,19 +145,26 @@ function colorizeLines(editor: vscode.TextEditor) {
 	const gitHistory = getGitHistory(filename);
 	const colorMap = calculateColorMap(new Set(gitHistory.lines.map((line) => line.timestamp)));
 
-	var theme = themes["Yellow Snow"];
+	//var theme = themes["Yellow Snow"];
+	var theme = themes["Purple Stain"];
 
 	for (let i = 0; i < lines; i++) {
 		const line = document.lineAt(i);
-		const bgLevel = colorMap.get(gitHistory.lines[i].timestamp) || 0;
-		const bgColor = getBGColor(theme, bgLevel);
-		const fgColor = getFGColor(theme, bgLevel);
+		const level = colorMap.get(gitHistory.lines[i].timestamp) || 0;
+//		const level = Math.floor((255.0 * i) / lines);
+		const bgColor = getBGColor(theme, level).toHex();
+		const fgColor = getFGColor(theme, level).toHex();
 
-		const bgHex = `#${bgColor.red.toString(16).padStart(2, "0")}${bgColor.green.toString(16).padStart(2, "0")}${bgColor.blue.toString(16).padStart(2, "0")}`;
-		
 		editor.setDecorations(vscode.window.createTextEditorDecorationType({
-			backgroundColor: bgHex
-			}), [line.rangeIncludingLineBreak]);
+			color: fgColor,
+			backgroundColor: bgColor,
+			isWholeLine: true,
+			before: {
+				contentText: gitHistory.lines[i].author.substring(0, 8) + " ",
+				color: fgColor,
+				backgroundColor: bgColor
+			}
+			}), [line.range]);
 	}
 }
 
