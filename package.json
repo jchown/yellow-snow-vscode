@@ -16,7 +16,25 @@
         "command": "yellowSnow.openView",
         "title": "Open Yellow Snow View"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Yellow Snow",
+      "properties": {
+        "yellowsnow.theme": {
+          "type": "string",
+          "default": "YS",
+          "enum": ["YS", "PS"],
+          "enumItemLabels": [
+            "Yellow Snow",
+            "Purple Stain"
+          ],
+          "enumDescriptions": [
+            "Yellow Snow",
+            "Purple Stain"
+          ]
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

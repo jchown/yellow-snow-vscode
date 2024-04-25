@@ -1,6 +1,6 @@
-# yellow-snow README
+# Yellow Snow for Visual Studio Code
 
-This is the README for your extension "yellow-snow". After writing up a brief description, we recommend including the following sections.
+See where your fellow developers left their mark.
 
 ## Features
 

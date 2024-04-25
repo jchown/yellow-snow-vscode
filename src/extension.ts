@@ -1,23 +1,19 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import { get } from 'http';
 import * as vscode from 'vscode';
 
+enum ThemeID {
+	YellowSnow = "YS",
+	PurpleStain = "PS"
+}
 
-
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
 	let disposable = vscode.commands.registerCommand('yellowSnow.openView', () => {
-		vscode.window.showInformationMessage('Hello World from Yellow Snow!');
 
 	    // Get the active text editor
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
-		  const document = editor.document;
-		  // Open the Yellow Snow view with the document
-		  openYellowSnowView(document);
+		  let configuration = vscode.workspace.getConfiguration("yellow-snow");
+		  openYellowSnowView(editor.document, configuration.get<ThemeID>("theme") || ThemeID.YellowSnow);
 		}
 	});
 
@@ -26,9 +22,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 abstract class Line {
 	timestamp: number = 0;
-  }
+}
   
-  class LineFile extends Line {
+class LineFile extends Line {
 	author: string;
 	email?: string;
 	lineNo?: number;
@@ -53,7 +49,7 @@ class Change {
 	filename: string = ""; // So we can track renames
 }
 
-function openYellowSnowView(document: vscode.TextDocument) {
+function openYellowSnowView(document: vscode.TextDocument, theme: ThemeID) {
 	// Create a new read-only text editor
 	vscode.window.showTextDocument(document, {
 	  preview: false,
@@ -61,7 +57,7 @@ function openYellowSnowView(document: vscode.TextDocument) {
 	  preserveFocus: true
 	}).then((editor) => {
 	  // Set the background color of each line based on the git history
-	  colorizeLines(editor);
+	  colorizeLines(editor, theme);
 	});
   }
 
@@ -69,7 +65,7 @@ function openYellowSnowView(document: vscode.TextDocument) {
 /// Represents a color in the RGB color space (0-255 per channel).
 /// </summary>
 
-  class Color {
+class Color {
 	red: number;
 	green: number;
 	blue: number;
@@ -83,9 +79,9 @@ function openYellowSnowView(document: vscode.TextDocument) {
 	toHex() {
 		return `#${this.red.toString(16).padStart(2, "0")}${this.green.toString(16).padStart(2, "0")}${this.blue.toString(16).padStart(2, "0")}`;
 	}
-  }
+}
 
-  class Theme {
+class Theme {
 	id: string;
 	fgOld: Color;
 	fgNew: Color;
@@ -101,10 +97,10 @@ function openYellowSnowView(document: vscode.TextDocument) {
 	}
   }
   
-const themes = {
-	"Yellow Snow": new Theme("YS", new Color(0, 0, 0), new Color(0, 0, 0), new Color(255, 255, 255), new Color(255, 255, 0)),
-	"Purple Stain": new Theme("PS", new Color(255, 255, 255), new Color(255, 255, 0), new Color(29, 12, 40), new Color(87, 38, 128))
-};
+const themes = new Map<ThemeID, Theme>([
+	[ThemeID.YellowSnow, new Theme("YS", new Color(0, 0, 0), new Color(0, 0, 0), new Color(255, 255, 255), new Color(255, 255, 0))],
+	[ThemeID.PurpleStain, new Theme("PS", new Color(255, 255, 255), new Color(255, 255, 0), new Color(29, 12, 40), new Color(87, 38, 128))]
+]);
 
 function getBGColor(theme: Theme, level: number) {
 	var from = theme.bgOld;
@@ -138,7 +134,7 @@ function getColor(level: number, from: Color, to: Color) {
 	return new Color(r, g, b);
 }
 
-function colorizeLines(editor: vscode.TextEditor) {
+function colorizeLines(editor: vscode.TextEditor, themeID: ThemeID) {
 	const document = editor.document;
 	const lines = document.lineCount;
 	const filename = document.fileName;
@@ -146,7 +142,10 @@ function colorizeLines(editor: vscode.TextEditor) {
 	const colorMap = calculateColorMap(new Set(gitHistory.lines.map((line) => line.timestamp)));
 
 	//var theme = themes["Yellow Snow"];
-	var theme = themes["Purple Stain"];
+	var theme = themes.get(themeID);
+	if (theme === undefined || theme === null) {
+        throw new Error(`Invalid theme: ${themeID}`);
+    }
 
 	for (let i = 0; i < lines; i++) {
 		const line = document.lineAt(i);
@@ -164,7 +163,7 @@ function colorizeLines(editor: vscode.TextEditor) {
 				color: fgColor,
 				backgroundColor: bgColor
 			}
-			}), [line.range]);
+		}), [line.range]);
 	}
 }
 
@@ -209,14 +208,15 @@ function calculateColorMap(timestamps: Set<number>): Map<number, number> {
 	  const timestamp = sorted[i];
   
 	  const t0 = (timestamp - minTime) / (maxTime - minTime);
-	  const t1 = i / (sorted.length - 1);
+	  const t1 = i / (sorted.length - 1.0);
   
 	  const t = t0 * t1 * t0 * t1 * t0 * t1;
 	  colorMap.set(timestamp, Math.floor(t * 255));
 	}
   
 	return colorMap;
-  }
+}
+
 function getGitHistory(filename: string) {
 	
 	const repoRoot = getRepoRoot(filename);
@@ -239,11 +239,15 @@ function getGitHistory(filename: string) {
 	let currentCommit: Change = new Change();
 		
 	for (const output of commandOutput) {
-	  if (output.length === 0) continue;
+	  if (output.length === 0) {
+		continue;
+	  }
 	
 	  if (output[0] !== '\t') {
 		const space = output.indexOf(' ');
-		if (space < 0) continue;
+		if (space < 0) { 
+			continue;
+		}
 	
 		const left = output.substring(0, space);
 		const right = output.substring(space + 1);
