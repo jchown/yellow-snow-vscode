@@ -2,7 +2,12 @@
   "name": "yellow-snow",
   "displayName": "Yellow Snow",
   "description": "See where your fellow developers left their mark",
-  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jchown/yellow-snow-vscode.git"
+  },
+  "publisher": "ShowroomDummies",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.88.0"
   },
@@ -29,8 +34,8 @@
             "Purple Stain"
           ],
           "enumDescriptions": [
-            "Yellow Snow",
-            "Purple Stain"
+            "White to yellow 'light' color scheme",
+            "Black to purple 'dark' color scheme"
           ]
         }
       }

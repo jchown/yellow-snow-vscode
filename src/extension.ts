@@ -104,6 +104,7 @@ function colorizeLines(editor: vscode.TextEditor, themeID: ThemeID) {
 			}
 		}), [line.range]);
 
+		/*
 		const decoration = vscode.window.createTextEditorDecorationType({
 			isWholeLine: true,
 			renderOptions: {
@@ -118,11 +119,13 @@ function colorizeLines(editor: vscode.TextEditor, themeID: ThemeID) {
 			},
 		});
 
+
 		minimapDecorations.push(decoration);
 
 		// Apply the decoration to the corresponding line
 		const lineRange = document.lineAt(i).range;
 		editor.setDecorations(decoration, [lineRange]);
+		*/
 	}
 }
 
