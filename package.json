@@ -20,7 +20,7 @@
     "configuration": {
       "title": "Yellow Snow",
       "properties": {
-        "yellowsnow.theme": {
+        "yellowSnow.theme": {
           "type": "string",
           "default": "YS",
           "enum": ["YS", "PS"],

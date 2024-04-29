@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
 
-enum ThemeID {
-	YellowSnow = "YS",
-	PurpleStain = "PS"
-}
+import { Color } from './Color';
+import { Theme } from './Theme';
+import { Change } from './Change';
+import { LineFile } from './LineFile';
+import { ThemeID } from './ThemeID';
+
+let minimapDecorations: vscode.TextEditorDecorationType[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -12,41 +15,13 @@ export function activate(context: vscode.ExtensionContext) {
 	    // Get the active text editor
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
-		  let configuration = vscode.workspace.getConfiguration("yellow-snow");
-		  openYellowSnowView(editor.document, configuration.get<ThemeID>("theme") || ThemeID.YellowSnow);
+		  let configuration = vscode.workspace.getConfiguration("yellowSnow");
+		  let theme = configuration.get<ThemeID>("theme");
+		  openYellowSnowView(editor.document, theme || ThemeID.YellowSnow);
 		}
-	});
+	});	
 
 	context.subscriptions.push(disposable);
-}
-
-abstract class Line {
-	timestamp: number = 0;
-}
-  
-class LineFile extends Line {
-	author: string;
-	email?: string;
-	lineNo?: number;
-	source: string;
-	comment: string;
-  
-	constructor(author: string, source: string, comment: string, timestamp: number) {
-	  super();
-	  this.author = author;
-	  this.source = source;
-	  this.comment = comment;
-	  this.timestamp = timestamp;
-	}
-}
-
-class Change {
-	sha?: string;
-	timestamp: number = 0;
-	comment: string = "";
-	editor: string = "";
-	editorEmail: string = "";
-	filename: string = ""; // So we can track renames
 }
 
 function openYellowSnowView(document: vscode.TextDocument, theme: ThemeID) {
@@ -61,42 +36,6 @@ function openYellowSnowView(document: vscode.TextDocument, theme: ThemeID) {
 	});
   }
 
-/// <summary>
-/// Represents a color in the RGB color space (0-255 per channel).
-/// </summary>
-
-class Color {
-	red: number;
-	green: number;
-	blue: number;
-
-	constructor(red: number, green: number, blue: number) {
-		this.red = red;
-		this.green = green;
-		this.blue = blue;
-	}
-
-	toHex() {
-		return `#${this.red.toString(16).padStart(2, "0")}${this.green.toString(16).padStart(2, "0")}${this.blue.toString(16).padStart(2, "0")}`;
-	}
-}
-
-class Theme {
-	id: string;
-	fgOld: Color;
-	fgNew: Color;
-	bgOld: Color;
-	bgNew: Color;
-
-	constructor(id: string, fgOld: Color, fgNew: Color, bgOld: Color, bgNew: Color) {
-		this.id = id;
-		this.fgOld = fgOld;
-		this.fgNew = fgNew;
-		this.bgOld = bgOld;
-		this.bgNew = bgNew;
-	}
-  }
-  
 const themes = new Map<ThemeID, Theme>([
 	[ThemeID.YellowSnow, new Theme("YS", new Color(0, 0, 0), new Color(0, 0, 0), new Color(255, 255, 255), new Color(255, 255, 0))],
 	[ThemeID.PurpleStain, new Theme("PS", new Color(255, 255, 255), new Color(255, 255, 0), new Color(29, 12, 40), new Color(87, 38, 128))]
@@ -164,6 +103,26 @@ function colorizeLines(editor: vscode.TextEditor, themeID: ThemeID) {
 				backgroundColor: bgColor
 			}
 		}), [line.range]);
+
+		const decoration = vscode.window.createTextEditorDecorationType({
+			isWholeLine: true,
+			renderOptions: {
+				minimap: {
+					color: new vscode.ThemableDecorationAttachmentRenderOptions(
+						new vscode.ThemableDecorationRenderOptions({
+							backgroundColor: new vscode.ThemeColor(`myExtension.minimapBackgroundColor${i}`),
+							foregroundColor: new vscode.ThemeColor(`myExtension.minimapForegroundColor${i}`),
+						})
+					),
+				},
+			},
+		});
+
+		minimapDecorations.push(decoration);
+
+		// Apply the decoration to the corresponding line
+		const lineRange = document.lineAt(i).range;
+		editor.setDecorations(decoration, [lineRange]);
 	}
 }
 
