@@ -2,6 +2,7 @@
   "name": "yellow-snow",
   "displayName": "Yellow Snow",
   "description": "See where your fellow developers left their mark",
+  "icon": "assets/logo.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/jchown/yellow-snow-vscode.git"
