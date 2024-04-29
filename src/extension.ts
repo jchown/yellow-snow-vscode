@@ -6,7 +6,19 @@ import { Change } from './Change';
 import { LineFile } from './LineFile';
 import { ThemeID } from './ThemeID';
 
+export class View {
+	constructor(public editor: vscode.TextEditor, public decorators: vscode.TextEditorDecorationType[]) {}
+
+	dispose() {
+		for (const decorator of this.decorators) {
+			decorator.dispose();
+		}
+	}
+}
+
 let minimapDecorations: vscode.TextEditorDecorationType[] = [];
+
+let views = new Map<vscode.TextEditor, View>();
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -20,6 +32,22 @@ export function activate(context: vscode.ExtensionContext) {
 		  openYellowSnowView(editor.document, theme || ThemeID.YellowSnow);
 		}
 	});	
+
+	vscode.window.onDidChangeVisibleTextEditors((editors) => {
+
+		var toDispose: vscode.TextEditor[] = [];
+		
+		for (const view of views.keys()) {
+			if (!editors.includes(view)) {
+				toDispose.push(view);
+			}
+		}
+
+		for (const view of toDispose) {
+			views.get(view)!.dispose();
+			views.delete(view);
+		}
+    });
 
 	context.subscriptions.push(disposable);
 }
@@ -79,8 +107,8 @@ function colorizeLines(editor: vscode.TextEditor, themeID: ThemeID) {
 	const filename = document.fileName;
 	const gitHistory = getGitHistory(filename);
 	const colorMap = calculateColorMap(new Set(gitHistory.lines.map((line) => line.timestamp)));
+	const decorations: vscode.TextEditorDecorationType[] = [];
 
-	//var theme = themes["Yellow Snow"];
 	var theme = themes.get(themeID);
 	if (theme === undefined || theme === null) {
         throw new Error(`Invalid theme: ${themeID}`);
@@ -93,7 +121,7 @@ function colorizeLines(editor: vscode.TextEditor, themeID: ThemeID) {
 		const bgColor = getBGColor(theme, level).toHex();
 		const fgColor = getFGColor(theme, level).toHex();
 
-		editor.setDecorations(vscode.window.createTextEditorDecorationType({
+		const decoration = vscode.window.createTextEditorDecorationType({
 			color: fgColor,
 			backgroundColor: bgColor,
 			isWholeLine: true,
@@ -102,7 +130,10 @@ function colorizeLines(editor: vscode.TextEditor, themeID: ThemeID) {
 				color: fgColor,
 				backgroundColor: bgColor
 			}
-		}), [line.range]);
+		});
+
+		decorations.push(decoration);
+		editor.setDecorations(decoration, [line.range]);
 
 		/*
 		const decoration = vscode.window.createTextEditorDecorationType({
@@ -127,6 +158,8 @@ function colorizeLines(editor: vscode.TextEditor, themeID: ThemeID) {
 		editor.setDecorations(decoration, [lineRange]);
 		*/
 	}
+
+	views.set(editor, new View(editor, decorations));
 }
 
 function calculateColorMap(timestamps: Set<number>): Map<number, number> {
