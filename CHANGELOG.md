@@ -3,7 +3,7 @@
 ## [0.2.0]
 
 - Keyboard shortcut to open view
-- Icon
+- Added icon
 
 ## [0.1.0]
 
