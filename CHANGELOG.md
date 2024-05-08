@@ -2,7 +2,7 @@
 
 ## [0.3.0]
 
-- Dispose of decorators when text editor is closed.
+- Use a CustomReadonlyEditor instead, style everything as HTML.
 
 ## [0.2.0]
 

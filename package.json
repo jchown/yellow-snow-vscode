@@ -17,17 +17,16 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
+    "customEditors": [
       {
-        "command": "yellowSnow.openView",
-        "title": "Open Yellow Snow View"
-      }
-    ],
-    "keybindings": [
-      {
-          "command": "yellowSnow.openView",
-          "key": "ctrl+y",
-          "mac": "cmd+y"
+        "viewType": "yellowSnow.viewType",
+        "displayName": "Yellow Snow",
+        "priority": "option",
+        "selector": [
+          {
+            "filenamePattern": "*"
+          }
+        ]
       }
     ],
     "configuration": {
@@ -36,7 +35,10 @@
         "yellowSnow.theme": {
           "type": "string",
           "default": "YS",
-          "enum": ["YS", "PS"],
+          "enum": [
+            "YS",
+            "PS"
+          ],
           "enumItemLabels": [
             "Yellow Snow",
             "Purple Stain"
