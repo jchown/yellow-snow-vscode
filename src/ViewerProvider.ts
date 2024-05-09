@@ -93,9 +93,13 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 			colors += `.color_${i} { color: ${fgCol}; background-color: ${bgCol}; }\n`;
 		};
 
-		var lines = "";
+		var lines = "", authors = "";
 		for (var i = 0; i < gitHistory.lines.length; i++) {
-			lines += this.getHtml(gitHistory.lines[i], colorMap);
+			const line = gitHistory.lines[i];
+			const timestamp = new Date(line.timestamp);
+			const tooltip = `${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}\nAuthor: ${line.author}\n\n${line.comment}\n\n`;
+			lines += this.getHtml(line, colorMap);
+			authors += `<div class='line tooltip'>${gitHistory.lines[i].author}<span class="tooltiptext">${tooltip}</span></div>`;
 		}
 
 		const configuration = vscode.workspace.getConfiguration();
@@ -103,7 +107,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 		const editorFontSize = configuration.get('editor.fontSize');
 		const editorFontWeight = configuration.get('editor.fontWeight');
 
-		const html = `<!DOCTYPE html>
+		return `<!DOCTYPE html>
 		<html lang="en">
 		<head>
 			<meta charset="UTF-8">
@@ -119,6 +123,35 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 					padding: 0;
 					line-height: 1.4;
 				}
+				#container {
+					display: flex;
+				}
+				#authors {
+					flex: 0 0 5em;
+				}
+				#text {
+					flex: 1;
+				}
+				.tooltip {
+					position: relative;
+					display: inline-block;
+					border-bottom: 1px dotted black;
+				}
+				.tooltip .tooltiptext {
+					visibility: hidden;
+					width: 320px;
+					background-color: black;
+					color: #fff;
+					text-align: center;
+					padding: 5px 0;
+					border-radius: 6px;
+					
+					position: absolute;
+					z-index: 1;
+				}
+				.tooltip:hover .tooltiptext {
+					visibility: visible;
+				}
 				.line {
 					white-space: pre;
 					width: 100%;
@@ -129,14 +162,16 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 			</style>
 		</head>
 		<body>
-			<div id="yellowSnow">
-				${lines}
-			</div>
+			<div id="container">
+				<div id="authors">
+					${authors}
+				</div>
+				<div id="text">
+					${lines}
+				</div>
+			</section>
 		</body>
 		</html>`;
-
-		console.log(html);
-		return html;
 	}
 
 	getHtml(line: LineFile, colorMap: Map<number, number>): string {

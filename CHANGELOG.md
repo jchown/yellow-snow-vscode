@@ -2,11 +2,13 @@
 
 ## [0.4.0]
 
-- Add a loading spinner.
+- Added a column for the commits.
+- Fixed horizontal scroll bar.
+- Added a loading spinner.
 
 ## [0.3.0]
 
-- Use a CustomReadonlyEditor instead, style everything as HTML.
+- Used a CustomReadonlyEditor instead, style everything as HTML.
 
 ## [0.2.0]
 
