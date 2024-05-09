@@ -4,9 +4,11 @@ See where your fellow developers left their mark.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+This extension offer a way of simply displaying the recency of edits to a text file, using its git history.
 
-For example if there is an image subfolder under your extension project workspace:
+In this way, it is very similar to a standard blame/annotate, but it is colored in using a gradient so that
+more recently changed lines are immediately more obvious. It is the author's opinion that your most recent bug
+is often due to the most recent change...
 
 \!\[feature X\]\(images/feature-x.png\)
 

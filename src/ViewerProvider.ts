@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
+import { readFile } from 'fs';
 import { YellowSnowView } from './YellowSnowView';
 import { GitHistory } from './GitHistory';
-import { readFile } from 'fs';
 import { LineFile } from './LineFile';
 import { ThemeID } from './ThemeID';
 import { Theme } from './Theme';
@@ -17,17 +17,21 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 
 	private static readonly viewType = 'yellowSnow.viewType';
 
-	constructor(
-		private readonly context: vscode.ExtensionContext
-	) { }
+	constructor(private readonly context: vscode.ExtensionContext) {
+
+	}
+
 	openCustomDocument(uri: vscode.Uri, openContext: vscode.CustomDocumentOpenContext, token: vscode.CancellationToken): vscode.CustomDocument | Thenable<vscode.CustomDocument> {
 		return new YellowSnowView(uri);
 	}
+
 	resolveCustomEditor(document: YellowSnowView, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void {
 //		webviewPanel.webview.options = {
 //			enableScripts: true,
 //		};
 //			<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'nonce-${nonce}';">
+
+		webviewPanel.webview.html = this.getLoading();
 
 		try {
 			const gitHistory = new GitHistory(document.uri.fsPath);
@@ -40,28 +44,31 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 			console.log(e);
 
 			webviewPanel.webview.html = `<html><body>Failed to load file: ${e}</body></html>`;
-		}
+		}            
+	}
 
-		/*
-		function updateWebview() {
-			webviewPanel.webview.postMessage({
-				type: 'update',
-				text: document.uri.toString()
-			});
-		}
+	getLoading(): string {
 
-		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-			if (e.document.uri.toString() === document.uri.toString()) {
-				updateWebview();
-			}
-		});
-
-		webviewPanel.onDidDispose(() => {
-			changeDocumentSubscription.dispose();
-		});
-
-		updateWebview();
-		*/
+		return `<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Yellow Snow</title>
+			<style>
+				.loading {
+					width: 100%;
+					height: 60px;
+					background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' width='575' height='6px'%3E %3Cstyle%3E circle { animation: ball 2.5s cubic-bezier(0.000, 1.000, 1.000, 0.000) infinite; fill: %23bbb; } %23balls { animation: balls 2.5s linear infinite; } %23circle2 { animation-delay: 0.1s; } %23circle3 { animation-delay: 0.2s; } %23circle4 { animation-delay: 0.3s; } %23circle5 { animation-delay: 0.4s; } @keyframes ball { from { transform: none; } 20% { transform: none; } 80% { transform: translateX(864px); } to { transform: translateX(864px); } } @keyframes balls { from { transform: translateX(-40px); } to { transform: translateX(30px); } } %3C/style%3E %3Cg id='balls'%3E %3Ccircle class='circle' id='circle1' cx='-115' cy='3' r='3'/%3E %3Ccircle class='circle' id='circle2' cx='-130' cy='3' r='3' /%3E %3Ccircle class='circle' id='circle3' cx='-145' cy='3' r='3' /%3E %3Ccircle class='circle' id='circle4' cx='-160' cy='3' r='3' /%3E %3Ccircle class='circle' id='circle5' cx='-175' cy='3' r='3' /%3E %3C/g%3E %3C/svg%3E") 50% no-repeat;
+				}
+			</style>
+		</head>
+		<body>
+			<div class="loading">
+				Loading...
+			</div>
+		</body>
+		</html>`;		
 	}
 
 	private getHtmlForWebview(file: string[], gitHistory: GitHistory, webview: vscode.Webview): string {
@@ -107,7 +114,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 					font-family: ${editorFontFamily};
 					font-size: ${editorFontSize};
 					font-weight: ${editorFontWeight};
-					overflow-x: hidden;
+					overflow-x: scroll;
 					margin: 0;
 					padding: 0;
 					line-height: 1.4;
