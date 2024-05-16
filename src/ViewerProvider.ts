@@ -99,6 +99,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 			const timestamp = new Date(line.timestamp);
 			const tooltip = `${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}\nAuthor: ${line.author}\n\n${line.comment}\n\n`;
 			lines += this.getHtml(line, colorMap);
+			//authors += `<div class='line'><div class='tooltip'>${gitHistory.lines[i].author}<span class="tooltiptext">${tooltip}</span></div></div>`;
 			authors += `<div class='line'>${gitHistory.lines[i].author}</div>`;
 		}
 
@@ -128,7 +129,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				#container {
 					display: flex;
 					white-space: nowrap;
-					height: 96vh;
+					height: 100vh;
 				}
 				#content {
 					flex-grow: 1;
@@ -141,6 +142,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 					height: fit-content;
 				}
 				#text {
+					margin-left: 1em;
 					flex: 1;
 					height: fit-content;
 				}

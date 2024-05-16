@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.5.0]
+
+- Add (fixed scale) minimap.
+
 ## [0.4.0]
 
 - Added a column for the commits.
