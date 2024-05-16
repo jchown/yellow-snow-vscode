@@ -99,13 +99,14 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 			const timestamp = new Date(line.timestamp);
 			const tooltip = `${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}\nAuthor: ${line.author}\n\n${line.comment}\n\n`;
 			lines += this.getHtml(line, colorMap);
-			authors += `<div class='line tooltip'>${gitHistory.lines[i].author}<span class="tooltiptext">${tooltip}</span></div>`;
+			authors += `<div class='line'>${gitHistory.lines[i].author}</div>`;
 		}
 
 		const configuration = vscode.workspace.getConfiguration();
 		const editorFontFamily = configuration.get('editor.fontFamily');
 		const editorFontSize = configuration.get('editor.fontSize');
 		const editorFontWeight = configuration.get('editor.fontWeight');
+		const minimapBgCol = this.getBGColor(theme, 0).toHex();
 
 		return `<!DOCTYPE html>
 		<html lang="en">
@@ -118,19 +119,39 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 					font-family: ${editorFontFamily};
 					font-size: ${editorFontSize};
 					font-weight: ${editorFontWeight};
-					overflow-x: scroll;
 					margin: 0;
 					padding: 0;
 					line-height: 1.4;
+					overflow: hidden;
+					background-color: ${minimapBgCol};
 				}
 				#container {
+					display: flex;
+					white-space: nowrap;
+					height: 96vh;
+				}
+				#content {
+					flex-grow: 1;
+					overflow: scroll;
 					display: flex;
 				}
 				#authors {
 					flex: 0 0 5em;
+					overflow-x: hidden;
+					height: fit-content;
 				}
 				#text {
 					flex: 1;
+					height: fit-content;
+				}
+				#minimap_container {
+					width: 120px;
+				}
+				#minimap {
+					width: 884px;
+					overflow-x: hidden;
+					transform: scale(0.125);
+					transform-origin: 0 0;
 				}
 				.tooltip {
 					position: relative;
@@ -154,7 +175,6 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				}
 				.line {
 					white-space: pre;
-					width: 100%;
 					margin: 0;
 					padding: 0;
 				}
@@ -163,13 +183,20 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 		</head>
 		<body>
 			<div id="container">
-				<div id="authors">
-					${authors}
+				<div id="content">
+					<div id="authors">
+						${authors}
+					</div>
+					<div id="text">
+						${lines}
+					</div>
 				</div>
-				<div id="text">
+				<div id="minimap_container">
+					<div id="minimap">
 					${lines}
+					</div>
 				</div>
-			</section>
+			</div>
 		</body>
 		</html>`;
 	}
