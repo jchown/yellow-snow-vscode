@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yellow Snow</title>
+    <style>
+        body {
+            margin: 4px;
+            padding: 4px;
+            line-height: 1.4;
+        }
+        #container {
+            margin: 4px;
+            padding: 4px;
+            display: flex;
+            background-color: blue;
+            white-space: nowrap;
+        }
+        #content {
+            margin: 4px;
+            padding: 4px;
+            flex-grow: 1;
+            overflow-x: scroll;
+            display: flex;
+            background-color: yellow;
+        }
+        #authors {
+            margin: 4px;
+            padding: 4px;
+            flex: 0 0 5em;
+            background-color: red;
+        }
+        #text {
+            margin: 4px;
+            padding: 4px;
+            flex: 0.8;
+            background-color: green;
+        }
+        #minimap {
+            margin: 4px;
+            padding: 4px;
+            flex: 0 0 5em;
+            overflow-x: hidden;
+            transform: scale(0.25);
+            background-color: pink;
+         }
+         .line {
+            white-space: nowrap;
+         }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="content">
+            <div id="authors">
+                <div class="line">
+                    Some authors that should be truncated
+                </div>
+                <div class="line">
+                    Some authors 
+                </div>
+                <div class="line">
+                    Some authors 
+                </div>
+            </div>
+            <div id="text">
+                <div class="line">
+                    Lots of text which can be quite long. Lots of text which can be quite long. 
+                </div>
+                <div class="line">
+                    Lots of text which can be quite long.
+                </div>
+                <div class="line">
+                    Lots of text which can be quite long. Lots of text which can be quite long. Lots of text which can be quite long. 
+                </div>
+            </div>
+        </div>
+        <div id="minimap">
+            <div class="line">
+                Lots of text which can be quite long
+            </div>
+            <div class="line">
+                Lots of text which can be quite long
+            </div>
+            <div class="line">
+                Lots of text which can be quite long
+            </div>
+        </div>
+    </div>
+</body>
+</html>
