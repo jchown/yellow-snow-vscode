@@ -153,7 +153,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 					transform: scale(0.125);
 					transform-origin: 0 0;
 				}
-				#visible-region {
+				#visible_region {
 					position: absolute;
 					background-color: ${minimapVisCol};
 					pointer-events: none;
@@ -205,14 +205,14 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 					<div id="minimap">
 						${lines}
 					</div>
-					<div id="visible-region" style="top: 40px; bottom: 0px;">
+					<div id="visible_region" style="top: 0px; bottom: 0px;">
 					</div>
 				</div>
 			</div>
 			<script>
 				updateMinimap();
 				window.addEventListener('resize', updateMinimap);
-				window.addEventListener('scroll', updateMinimap);
+				document.querySelector('#content').addEventListener('scroll', updateMinimap);
 			</script>
 		</body>
 		</html>`;
@@ -221,18 +221,23 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 	getMinimapCode(): string {
 		return `
 		function updateMinimap() {
-			console.log('updateMinimap');
 			
+			const contentContainer = document.querySelector('#content');
 			const codeContainer = document.querySelector('#text');
 			const minimapContainer = document.querySelector('#minimap_container');
 			const minimap = document.querySelector('#minimap');
+			const visibleRegion = document.querySelector('#visible_region');
 
 			const totalCodeHeight = codeContainer.clientHeight;
 			const minimapHeight = minimapContainer.clientHeight;
-			console.log('Minimap = ' + minimapHeight + ', Total = ' + totalCodeHeight);
+
+			const visibleTop = contentContainer.scrollTop;
+			const visibleBottom = contentContainer.scrollHeight - (visibleTop + contentContainer.clientHeight);
 
 			const zoomFactor = minimapHeight / totalCodeHeight;
 			minimap.style.transform = "scale(" + zoomFactor + ")";
+			visibleRegion.style.top = parseInt(visibleTop * zoomFactor) + "px";
+			visibleRegion.style.bottom = parseInt(visibleBottom * zoomFactor) + "px";
 		}`;
 	}
 
