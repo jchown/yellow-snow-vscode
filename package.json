@@ -17,6 +17,12 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "yellowSnow.openView",
+        "title": "Open in Yellow Snow"
+      }
+    ],
     "customEditors": [
       {
         "viewType": "yellowSnow.viewType",
@@ -49,7 +55,14 @@
           ]
         }
       }
-    }
+    },
+    "keybindings": [
+      {
+        "command": "yellowSnow.openView",
+        "key": "ctrl+y",
+        "mac": "cmd+y"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

@@ -14,7 +14,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 		return vscode.window.registerCustomEditorProvider(ViewerProvider.viewType, provider);
 	}
 
-	private static readonly viewType = 'yellowSnow.viewType';
+	public static readonly viewType = 'yellowSnow.viewType';
 
 	constructor(private readonly context: vscode.ExtensionContext) {
 
