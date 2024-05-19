@@ -11,8 +11,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 
 	public static register(context: vscode.ExtensionContext): vscode.Disposable {
 		const provider = new ViewerProvider(context);
-		const providerRegistration = vscode.window.registerCustomEditorProvider(ViewerProvider.viewType, provider);
-		return providerRegistration;
+		return vscode.window.registerCustomEditorProvider(ViewerProvider.viewType, provider);
 	}
 
 	private static readonly viewType = 'yellowSnow.viewType';
@@ -26,9 +25,9 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 	}
 
 	resolveCustomEditor(document: YellowSnowView, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void {
-//		webviewPanel.webview.options = {
-//			enableScripts: true,
-//		};
+		webviewPanel.webview.options = {
+			enableScripts: true,
+		};
 //			<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'nonce-${nonce}';">
 
 		webviewPanel.webview.html = this.getLoading();
@@ -73,9 +72,6 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 
 	private getHtmlForWebview(file: string[], gitHistory: GitHistory, webview: vscode.Webview): string {
 
-		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'viewer.js'));
-		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'viewer.css'));
-
 		const colorMap = this.calculateColorMap(new Set(gitHistory.lines.map((line) => line.timestamp)));
 
 		let extConfig = vscode.workspace.getConfiguration("yellowSnow");
@@ -108,6 +104,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 		const editorFontSize = configuration.get('editor.fontSize');
 		const editorFontWeight = configuration.get('editor.fontWeight');
 		const minimapBgCol = this.getBGColor(theme, 0).toHex();
+		const minimapVisCol = theme.visCol;
 
 		return `<!DOCTYPE html>
 		<html lang="en">
@@ -148,12 +145,20 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				}
 				#minimap_container {
 					width: 120px;
+					position: relative;
 				}
 				#minimap {
 					width: 884px;
 					overflow-x: hidden;
 					transform: scale(0.125);
 					transform-origin: 0 0;
+				}
+				#visible-region {
+					position: absolute;
+					background-color: ${minimapVisCol};
+					pointer-events: none;
+					left: 0;
+					right: 0;
 				}
 				.tooltip {
 					position: relative;
@@ -182,6 +187,9 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				}
 				${colors}
 			</style>
+			<script>
+				${this.getMinimapCode()}
+			</script>
 		</head>
 		<body>
 			<div id="container">
@@ -195,12 +203,37 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				</div>
 				<div id="minimap_container">
 					<div id="minimap">
-					${lines}
+						${lines}
+					</div>
+					<div id="visible-region" style="top: 40px; bottom: 0px;">
 					</div>
 				</div>
 			</div>
+			<script>
+				updateMinimap();
+				window.addEventListener('resize', updateMinimap);
+				window.addEventListener('scroll', updateMinimap);
+			</script>
 		</body>
 		</html>`;
+	}
+
+	getMinimapCode(): string {
+		return `
+		function updateMinimap() {
+			console.log('updateMinimap');
+			
+			const codeContainer = document.querySelector('#text');
+			const minimapContainer = document.querySelector('#minimap_container');
+			const minimap = document.querySelector('#minimap');
+
+			const totalCodeHeight = codeContainer.clientHeight;
+			const minimapHeight = minimapContainer.clientHeight;
+			console.log('Minimap = ' + minimapHeight + ', Total = ' + totalCodeHeight);
+
+			const zoomFactor = minimapHeight / totalCodeHeight;
+			minimap.style.transform = "scale(" + zoomFactor + ")";
+		}`;
 	}
 
 	getHtml(line: LineFile, colorMap: Map<number, number>): string {
@@ -222,8 +255,8 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 	}
 
 	themes = new Map<ThemeID, Theme>([
-		[ThemeID.YellowSnow, new Theme("YS", new Color(0, 0, 0), new Color(0, 0, 0), new Color(255, 255, 255), new Color(255, 255, 0))],
-		[ThemeID.PurpleStain, new Theme("PS", new Color(255, 255, 255), new Color(255, 255, 0), new Color(29, 12, 40), new Color(87, 38, 128))]
+		[ThemeID.YellowSnow, new Theme("YS", new Color(0, 0, 0), new Color(0, 0, 0), new Color(255, 255, 255), new Color(255, 255, 0), "rgba(0, 123, 255, 0.3)")],
+		[ThemeID.PurpleStain, new Theme("PS", new Color(255, 255, 255), new Color(255, 255, 0), new Color(29, 12, 40), new Color(87, 38, 128), "rgba(0, 123, 255, 0.3)")]
 	]);
 	
 	private getBGColor(theme: Theme, level: number) {
