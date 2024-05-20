@@ -146,6 +146,11 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				#minimap_container {
 					width: 120px;
 					position: relative;
+					transition: right 0.3s ease-in-out;
+					transition: width 0.3s ease-in-out;
+				}
+				#minimap_container.hidden {
+					width: 0px;
 				}
 				#minimap {
 					width: 884px;
@@ -235,9 +240,21 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 			const visibleBottom = contentContainer.scrollHeight - (visibleTop + contentContainer.clientHeight);
 
 			const zoomFactor = minimapHeight / totalCodeHeight;
-			minimap.style.transform = "scale(" + zoomFactor + ")";
-			visibleRegion.style.top = parseInt(visibleTop * zoomFactor) + "px";
-			visibleRegion.style.bottom = parseInt(visibleBottom * zoomFactor) + "px";
+
+			if (zoomFactor < 1) {
+				minimap.style.transform = "scale(" + zoomFactor + ")";
+				visibleRegion.style.top = parseInt(visibleTop * zoomFactor) + "px";
+				visibleRegion.style.bottom = parseInt(visibleBottom * zoomFactor) + "px";
+
+				if (minimapContainer.classList.contains('hidden') === true) {
+					minimapContainer.classList.remove('hidden');
+				}
+			}
+			else {
+				if (minimapContainer.classList.contains('hidden') === false) {
+					minimapContainer.classList.add('hidden');
+				}
+			}
 		}`;
 	}
 
