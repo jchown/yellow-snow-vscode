@@ -190,7 +190,6 @@ ${comment}
 					width: fit-content;
 					border-radius: 10px;
 					box-shadow: 0 0 10px rgba(0, 0, 0, 0.75);
-					border: 1px solid #fff;
 				}
 				.line {
 					white-space: pre;
@@ -217,7 +216,7 @@ ${comment}
 					<div id="minimap">
 						${lines}
 					</div>
-					<div id="visible_region" style="top: 0px; bottom: 0px;">
+					<div id="visible_region">
 					</div>
 				</div>
 				${commits}
@@ -283,6 +282,7 @@ ${comment}
 					const triggerRect = trigger.getBoundingClientRect();
 					const tooltipRect = tooltip.getBoundingClientRect();
 					const viewportWidth = window.innerWidth;
+					const viewportHeight = window.innerHeight;
 
 					let left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2 + 40;
 					let top = triggerRect.top - tooltipRect.height - 10;
@@ -292,6 +292,12 @@ ${comment}
 					}
 					if (left + tooltipRect.width > viewportWidth) {
 						left = viewportWidth - tooltipRect.width;
+					}
+					if (top < 10) {
+						top = 10;
+					}
+					if (top + 120 > viewportHeight) {
+						top = viewportHeight - 120;
 					}
 
 					tooltip.style.left = left + "px";
