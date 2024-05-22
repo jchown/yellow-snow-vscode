@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.7.0]
+
+- Show commit tooltip.
+- Hide minimap when not needed.
+
 ## [0.6.0]
 
 - Add scaling minimap with visible region indicator.
