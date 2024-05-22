@@ -17,7 +17,6 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 	public static readonly viewType = 'yellowSnow.viewType';
 
 	constructor(private readonly context: vscode.ExtensionContext) {
-
 	}
 
 	openCustomDocument(uri: vscode.Uri, openContext: vscode.CustomDocumentOpenContext, token: vscode.CancellationToken): vscode.CustomDocument | Thenable<vscode.CustomDocument> {
@@ -28,7 +27,6 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 		webviewPanel.webview.options = {
 			enableScripts: true,
 		};
-//			<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'nonce-${nonce}';">
 
 		webviewPanel.webview.html = this.getLoading();
 
@@ -89,14 +87,26 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 			colors += `.color_${i} { color: ${fgCol}; background-color: ${bgCol}; }\n`;
 		};
 
+		var commits = "";
+		for (var i = 0; i < gitHistory.changes.length; i++) {
+			const change = gitHistory.changes[i];
+			const timestamp = new Date(change.timestamp * 1000);
+			const editor = this.escapeHtml(`${change.editor} ${change.editorEmail}`);
+			const comment = this.escapeHtml(change.comment);
+			commits += `
+		<div class="tooltip" id="commit_${change.sha}">${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}
+${editor}
+
+${comment}
+</div>`;
+		};
+
 		var lines = "", authors = "";
 		for (var i = 0; i < gitHistory.lines.length; i++) {
 			const line = gitHistory.lines[i];
 			const timestamp = new Date(line.timestamp);
-			const tooltip = `${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}\nAuthor: ${line.author}\n\n${line.comment}\n\n`;
 			lines += this.getHtml(line, colorMap);
-			//authors += `<div class='line'><div class='tooltip'>${gitHistory.lines[i].author}<span class="tooltiptext">${tooltip}</span></div></div>`;
-			authors += `<div class='line'>${gitHistory.lines[i].author}</div>`;
+			authors += `<div class='line commit commit_${gitHistory.lines[i].commit}'>${gitHistory.lines[i].author}</div>`;
 		}
 
 		const configuration = vscode.workspace.getConfiguration();
@@ -105,6 +115,8 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 		const editorFontWeight = configuration.get('editor.fontWeight');
 		const minimapBgCol = this.getBGColor(theme, 0).toHex();
 		const minimapVisCol = theme.visCol;
+		const tooltipFgCol = this.getFGColor(theme, 0).toHex();
+		const tooltipBgCol = this.getBGColor(theme, 0).toHex();
 
 		return `<!DOCTYPE html>
 		<html lang="en">
@@ -127,6 +139,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 					display: flex;
 					white-space: nowrap;
 					height: 100vh;
+					position: relative;
 				}
 				#content {
 					flex-grow: 1;
@@ -166,24 +179,18 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 					right: 0;
 				}
 				.tooltip {
-					position: relative;
-					display: inline-block;
-					border-bottom: 1px dotted black;
-				}
-				.tooltip .tooltiptext {
-					visibility: hidden;
-					width: 320px;
-					background-color: black;
-					color: #fff;
-					text-align: center;
-					padding: 5px 0;
-					border-radius: 6px;
-					
+					padding: 1em;
 					position: absolute;
-					z-index: 1;
-				}
-				.tooltip:hover .tooltiptext {
-					visibility: visible;
+					display: none;
+					min-width: 320px;
+					color: ${tooltipFgCol};
+					background-color: ${tooltipBgCol};
+					white-space: pre;
+					text-align: center;
+					width: fit-content;
+					border-radius: 10px;
+					box-shadow: 0 0 10px rgba(0, 0, 0, 0.75);
+					border: 1px solid #fff;
 				}
 				.line {
 					white-space: pre;
@@ -213,11 +220,13 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 					<div id="visible_region" style="top: 0px; bottom: 0px;">
 					</div>
 				</div>
+				${commits}
 			</div>
 			<script>
 				updateMinimap();
 				window.addEventListener('resize', updateMinimap);
 				document.querySelector('#content').addEventListener('scroll', updateMinimap);
+				${this.getToolipCode()}
 			</script>
 		</body>
 		</html>`;
@@ -256,6 +265,45 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				}
 			}
 		}`;
+	}
+
+	getToolipCode(): string {
+		return `
+		const triggers = document.querySelectorAll(".commit"); // Elements that trigger the tooltip
+		triggers.forEach(trigger => {
+
+			trigger.classList.forEach(c => {
+				
+				if (!c.startsWith("commit_"))
+					return;
+
+				const tooltip = document.getElementById(c);
+				trigger.addEventListener("mouseenter", () => {
+
+					const triggerRect = trigger.getBoundingClientRect();
+					const tooltipRect = tooltip.getBoundingClientRect();
+					const viewportWidth = window.innerWidth;
+
+					let left = triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2 + 40;
+					let top = triggerRect.top - tooltipRect.height - 10;
+
+					if (left < 0) {
+						left = 0;
+					}
+					if (left + tooltipRect.width > viewportWidth) {
+						left = viewportWidth - tooltipRect.width;
+					}
+
+					tooltip.style.left = left + "px";
+					tooltip.style.top = top + "px";
+					tooltip.style.display = "block"; 
+				});
+
+				trigger.addEventListener("mouseleave", () => {
+					tooltip.style.display = "none";
+				});
+			});
+		});`;
 	}
 
 	getHtml(line: LineFile, colorMap: Map<number, number>): string {

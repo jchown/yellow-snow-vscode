@@ -83,9 +83,11 @@ export class GitHistory {
         
             lines.push(new LineFile(
               editor,
+              currentCommit.editorEmail,
               output.substring(1),
               currentCommit.comment,
-              currentCommit.timestamp
+              currentCommit.timestamp,
+              currentCommit.sha
             ));
         
             firstLine = true;

@@ -60,6 +60,23 @@
          .line {
             white-space: nowrap;
          }
+         .tooltip {
+            position: absolute;
+            display: block;
+            left: 100px;
+            top: 100px;
+            min-width: 320px;
+            text-align: center;
+            align-items: center;
+            background-color: #000;
+            white-space: pre;
+            color: #fff;
+            text-align: left;
+            width: fit-content;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.75);
+            border: 1px solid #fff;
+        }
     </style>
 </head>
 <body>
@@ -106,6 +123,11 @@
                 Lots of text which can be quite long
             </div>
             </div>
+        </div>
+        <div class="tooltip">
+            Tooltip content here
+					
+            blah blah blah
         </div>
     </div>
 </body>
