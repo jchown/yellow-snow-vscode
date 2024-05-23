@@ -259,6 +259,7 @@ ${comment}
 
 			if (zoomFactor < 1) {
 				minimap.style.transform = "scale(" + zoomFactor + ")";
+				minimap.style.width = 120 / zoomFactor + "px";
 				visibleRegion.style.top = parseInt(visibleTop * zoomFactor) + "px";
 				visibleRegion.style.bottom = parseInt(visibleBottom * zoomFactor) + "px";
 
@@ -339,8 +340,8 @@ ${comment}
 	}
 
 	themes = new Map<ThemeID, Theme>([
-		[ThemeID.YellowSnow, new Theme("YS", new Color(0, 0, 0), new Color(0, 0, 0), new Color(255, 255, 255), new Color(255, 255, 0), "rgba(0, 123, 255, 0.3)")],
-		[ThemeID.PurpleStain, new Theme("PS", new Color(255, 255, 255), new Color(255, 255, 0), new Color(29, 12, 40), new Color(87, 38, 128), "rgba(0, 123, 255, 0.3)")]
+		[ThemeID.YellowSnow, new Theme("YS", new Color(0, 0, 0), new Color(0, 0, 0), new Color(255, 255, 255), new Color(255, 255, 0), "rgba(0, 123, 255, 0.2)")],
+		[ThemeID.PurpleStain, new Theme("PS", new Color(255, 255, 255), new Color(255, 255, 0), new Color(29, 12, 40), new Color(87, 38, 128), "rgba(0, 123, 255, 0.2)")]
 	]);
 	
 	private getBGColor(theme: Theme, level: number) {
