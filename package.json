@@ -8,7 +8,7 @@
     "url": "https://github.com/jchown/yellow-snow-vscode.git"
   },
   "publisher": "ShowroomDummies",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "engines": {
     "vscode": "^1.88.0"
   },

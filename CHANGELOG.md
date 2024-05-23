@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.8.0]
+
+- Fix minimap width scale.
+- Prepare for release.
+
 ## [0.7.0]
 
 - Show commit tooltip.
