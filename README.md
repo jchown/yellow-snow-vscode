@@ -1,73 +1,28 @@
 # Yellow Snow for Visual Studio Code
 
-See where your fellow developers left their mark.
+### See where your fellow developers left their mark.
 
-## Features
+## Overview
 
 This extension offer a way of simply displaying the recency of edits to a text file, using its git history.
 
-In this way, it is very similar to a standard blame/annotate, but it is colored in using a gradient so that
-more recently changed lines are immediately more obvious. It is the author's opinion that your most recent bug
-is often due to the most recent change...
+In this way, it is very similar to a standard blame/annotate, but it is coloured using a gradient such that more recently changed lines are immediately more obvious. It is the author's opinion that the most recent bug is often due to the most recent change...
 
-\!\[feature X\]\(images/feature-x.png\)
+![Yellow Snow](https://raw.githubusercontent.com/jchown/yellow-snow-vscode/main/src/images/yellow_snow.png)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## Usage
 
-## Requirements
+To open a text file in this view, use the hotkey* or the `Re-open Editor With...` option on the file tab's context menu. 
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+*`Alt-Y` (Windows/Linux) or `Cmd ⌘-Y` (Mac OS)
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `yellowSnow.theme`: The colour theme to use.
 
-## Known Issues
+|YS - Yellow Snow|PS - Purple Stain|
+|-|-|
+|<img src="https://raw.githubusercontent.com/jchown/yellow-snow-vscode/main/src/images/yellow_snow.png" width=385 height=249>|<img src="https://raw.githubusercontent.com/jchown/yellow-snow-vscode/main/src/images/purple_stain.png" width=385 height=249>|
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
