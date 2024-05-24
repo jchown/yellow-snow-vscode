@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.8.1]
+
+- Updated icon.
+
 ## [0.8.0]
 
 - Fix minimap width scale.
