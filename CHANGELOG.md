@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.9.0]
+
+- Minimap scrolling.
+- Auto-theme selection
+
 ## [0.8.1]
 
 - Updated icon.
