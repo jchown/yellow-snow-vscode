@@ -3,7 +3,6 @@ import { Line } from './Line';
 export class LineFile extends Line {
 	author: string;
 	email?: string;
-	lineNo?: number;
 	source: string;
 	comment: string;
 

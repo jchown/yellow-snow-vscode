@@ -81,9 +81,18 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 		const colorMap = this.calculateColorMap(new Set(gitHistory.lines.map((line) => line.timestamp)));
 
 		let extConfig = vscode.workspace.getConfiguration("yellowSnow");
-		let themeID = extConfig.get<ThemeID>("theme") || ThemeID.YellowSnow;
+		let themeID = extConfig.get<ThemeID>("theme") || ThemeID.Auto;
 
-		var theme = this.themes.get(themeID);
+		if (themeID === ThemeID.Auto) {
+			const themeName = vscode.window.activeColorTheme.kind;
+			if (themeName === vscode.ColorThemeKind.Light) {
+				themeID = ThemeID.YellowSnow;
+			} else {
+				themeID = ThemeID.PurpleStain;
+			}
+		}
+		
+		const theme = Theme.definitions.get(themeID);
 		if (theme === undefined || theme === null) {
 			throw new Error(`Invalid theme: ${themeID}`);
 		}
@@ -113,7 +122,7 @@ ${comment}
 		for (var i = 0; i < gitHistory.lines.length; i++) {
 			const line = gitHistory.lines[i];
 			const timestamp = new Date(line.timestamp);
-			lines += this.getHtml(line, colorMap);
+			lines += this.getHtml(i, line, colorMap);
 			authors += `<div class='line commit commit_${gitHistory.lines[i].commit}'>${gitHistory.lines[i].author}</div>`;
 		}
 
@@ -124,7 +133,7 @@ ${comment}
 		const minimapBgCol = this.getBGColor(theme, 0).toHex();
 		const minimapVisCol = theme.visCol;
 		const tooltipFgCol = this.getFGColor(theme, 0).toHex();
-		const tooltipBgCol = this.getBGColor(theme, 0).toHex();
+		const tooltipBgCol = theme.tooltipBg;
 
 		return `<!DOCTYPE html>
 		<html lang="en">
@@ -174,10 +183,9 @@ ${comment}
 					width: 0px;
 				}
 				#minimap {
-					width: 884px;
 					overflow-x: hidden;
-					transform: scale(0.125);
 					transform-origin: 0 0;
+					user-select: none;
 				}
 				#visible_region {
 					position: absolute;
@@ -190,12 +198,12 @@ ${comment}
 					padding: 1em;
 					position: absolute;
 					display: none;
-					min-width: 320px;
 					color: ${tooltipFgCol};
 					background-color: ${tooltipBgCol};
 					white-space: pre;
 					text-align: center;
 					width: fit-content;
+					min-width: 320px;
 					border-radius: 10px;
 					box-shadow: 0 0 10px rgba(0, 0, 0, 0.75);
 				}
@@ -207,7 +215,7 @@ ${comment}
 				${colors}
 			</style>
 			<script>
-				${this.getMinimapCode()}
+				${this.getMinimapCode(gitHistory.lines.length)}
 			</script>
 		</head>
 		<body>
@@ -233,13 +241,19 @@ ${comment}
 				updateMinimap();
 				window.addEventListener('resize', updateMinimap);
 				document.querySelector('#content').addEventListener('scroll', updateMinimap);
+				document.querySelectorAll('#minimap .line').forEach(line => {
+					line.addEventListener('mousedown', panMinimapStart);
+					line.addEventListener('mousemove', panMinimap);
+					line.addEventListener('mouseup', panMinimapEnd);
+				});
+				document.querySelector('#minimap').addEventListener('mouseleave', panMinimapEnd);
 				${this.getToolipCode()}
 			</script>
 		</body>
 		</html>`;
 	}
 
-	getMinimapCode(): string {
+	getMinimapCode(textLength: number): string {
 		return `
 		function updateMinimap() {
 			
@@ -272,7 +286,38 @@ ${comment}
 					minimapContainer.classList.add('hidden');
 				}
 			}
-		}`;
+		}
+
+		const textLength = ${textLength};
+		var panning = false;
+
+		function panMinimapStart(event) {
+			panning = true;
+			panMinimap(event);
+		}
+
+		function panMinimapEnd(event) {
+			panning = false;
+		}
+
+		function panMinimap(event) {
+			if (!panning)
+				return;
+			var line = event.target;
+			line.classList.forEach(c => {
+				if (!c.startsWith("line_"))
+					return;
+				const lineNumber = parseInt(c.substring(5));
+
+				const content = document.querySelector('#content');
+				const contentHeight = content.scrollHeight;
+
+				console.log(contentHeight, lineNumber, textLength);
+
+				content.scrollTop = Math.max(0, contentHeight * lineNumber / textLength - content.clientHeight / 2);
+			});
+		}
+		`;
 	}
 
 	getToolipCode(): string {
@@ -321,12 +366,12 @@ ${comment}
 		});`;
 	}
 
-	getHtml(line: LineFile, colorMap: Map<number, number>): string {
+	getHtml(lineNumber: number, line: LineFile, colorMap: Map<number, number>): string {
 		
 		const text = /\S/.test(line.source) ? line.source : " ";
 		const color = colorMap.get(line.timestamp) || 0;
 
-		return `<div class='color_${color} line'>${this.escapeHtml(text)}</div>`;
+		return `<div class='color_${color} line line_${lineNumber}'>${this.escapeHtml(text)}</div>`;
 	}
 
 	escapeHtml(unsafe: string): string {
@@ -339,11 +384,6 @@ ${comment}
 			.replace(/'/g, "&#039;");
 	}
 
-	themes = new Map<ThemeID, Theme>([
-		[ThemeID.YellowSnow, new Theme("YS", new Color(0, 0, 0), new Color(0, 0, 0), new Color(255, 255, 255), new Color(255, 255, 0), "rgba(0, 123, 255, 0.2)")],
-		[ThemeID.PurpleStain, new Theme("PS", new Color(255, 255, 255), new Color(255, 255, 0), new Color(29, 12, 40), new Color(87, 38, 128), "rgba(0, 123, 255, 0.2)")]
-	]);
-	
 	private getBGColor(theme: Theme, level: number) {
 		var from = theme.bgOld;
 		var to = theme.bgNew;

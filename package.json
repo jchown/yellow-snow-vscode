@@ -42,14 +42,17 @@
           "type": "string",
           "default": "YS",
           "enum": [
+            "AUTO",
             "YS",
             "PS"
           ],
           "enumItemLabels": [
+            "Auto",
             "Yellow Snow",
             "Purple Stain"
           ],
           "enumDescriptions": [
+            "Select between 'light' and 'dark' color schemes based on the current theme",
             "White to yellow 'light' color scheme",
             "Black to purple 'dark' color scheme"
           ]
