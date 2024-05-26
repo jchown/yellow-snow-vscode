@@ -1,10 +1,10 @@
-# Yellow Snow for Visual Studio Code
+# Yellow Snow
 
 ### See where your fellow developers left their mark.
 
 ## Overview
 
-This extension offer a way of simply displaying the recency of edits to a text file, using its git history.
+This extension offers a way of viewing the recency of edits to a text file, using its git history.
 
 In this way, it is very similar to a standard blame/annotate, but it is coloured using a gradient such that more recently changed lines are immediately more obvious. It is the author's opinion that the most recent bug is often due to the most recent change...
 
@@ -16,9 +16,9 @@ To open a text file in this view, use the hotkey* or the `Re-open Editor With...
 
 *`Alt-Y` (Windows/Linux) or `Cmd ⌘-Y` (Mac OS)
 
-## Extension Settings
+## Settings
 
-This extension contributes the following settings:
+This extension currently contributes one setting:
 
 * `yellowSnow.theme`: The colour theme to use.
 
