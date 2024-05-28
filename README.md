@@ -28,3 +28,12 @@ By default this will be `AUTO`, which selects the Yellow Snow theme when the edi
 |-|-|
 |<img src="https://raw.githubusercontent.com/jchown/yellow-snow-vscode/main/src/images/yellow_snow.png" width=385 height=249>|<img src="https://raw.githubusercontent.com/jchown/yellow-snow-vscode/main/src/images/purple_stain.png" width=385 height=249>|
 
+## Version History
+
+See <a href="https://github.com/jchown/yellow-snow-vscode/blob/main/CHANGELOG.md">change log</a>.
+
+## Copyright
+
+Copyright &copy; 2024, Jason Chown. Issued under an <a href="https://github.com/jchown/yellow-snow-vscode/blob/main/LICENSE.md">MIT license</a>. 
+
+PRs gratefully received.

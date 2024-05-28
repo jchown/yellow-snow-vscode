@@ -8,9 +8,9 @@
     "url": "https://github.com/jchown/yellow-snow-vscode.git"
   },
   "publisher": "ShowroomDummies",
-  "version": "0.9.0",
+  "version": "0.10.1",
   "engines": {
-    "vscode": "^1.88.0"
+    "vscode": "^1.82.0"
   },
   "categories": [
     "Other"
@@ -40,7 +40,7 @@
       "properties": {
         "yellowSnow.theme": {
           "type": "string",
-          "default": "YS",
+          "default": "AUTO",
           "enum": [
             "AUTO",
             "YS",
@@ -76,7 +76,7 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.88.0",
+    "@types/vscode": "^1.82.0",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@typescript-eslint/eslint-plugin": "^7.4.0",
