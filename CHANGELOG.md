@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.10.0]
+
+- Lower minimum version.
+- Auto-select theme by default.
+
 ## [0.9.0]
 
 - Minimap scrolling.

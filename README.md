@@ -22,6 +22,8 @@ This extension currently contributes one setting:
 
 * `yellowSnow.theme`: The colour theme to use.
 
+By default this will be `AUTO`, which selects the Yellow Snow theme when the editor is set to a light theme, and Purple Stain when it is set to dark.
+
 |YS - Yellow Snow|PS - Purple Stain|
 |-|-|
 |<img src="https://raw.githubusercontent.com/jchown/yellow-snow-vscode/main/src/images/yellow_snow.png" width=385 height=249>|<img src="https://raw.githubusercontent.com/jchown/yellow-snow-vscode/main/src/images/purple_stain.png" width=385 height=249>|
