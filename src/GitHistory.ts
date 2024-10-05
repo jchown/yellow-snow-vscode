@@ -14,7 +14,7 @@ export class GitHistory {
         const args = "annotate -p -w --stat";
     
         const execSync = require('child_process').execSync;
-        const command = `${gitCommand} ${args} ${relPath}`;
+        const command = `${gitCommand} ${args} "${relPath}"`;
         const options = { cwd: repoRoot };
         const dirChar = process.platform === "win32" ? "\\" : "/";
     
