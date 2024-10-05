@@ -1,1 +1,3 @@
 See https://github.com/jchown/yellow-snow-vscode/issues/1
+
+What a schoolboy error.
