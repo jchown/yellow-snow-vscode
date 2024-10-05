@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.11.0]
+
+- Fix for spaces in filenames.
+
 ## [0.10.0]
 
 - Lower minimum version.
