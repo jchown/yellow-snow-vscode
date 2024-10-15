@@ -194,6 +194,48 @@ ${comment}
 					left: 0;
 					right: 0;
 				}
+				#timeline_container {
+					position: fixed;
+					bottom: 10px;
+					left: 50%;
+					transform: translateX(-50%);
+					width: 60%;
+					background-color: var(--vscode-editor-background);
+					border: 1px solid var(--vscode-panel-border);
+		            border-radius: 4px;
+					padding: 0.5em;
+					box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+					z-index: 1000;
+					transition: bottom 0.3s ease-in-out;
+				}
+				#timeline_container.hidden {
+					bottom: -100px;
+				}
+				#timeline {
+					width: 100%;
+					height: 30px;
+    		    }
+		        #timeline_markers {
+        		    position: relative;
+		            height: 20px;
+		        }
+				#timeline_toggle {
+					position: fixed;
+					bottom: 10px;
+					right: 10px;
+					z-index: 1001;
+					background-color: var(--vscode-button-background);
+					color: var(--vscode-button-foreground);
+					border: none;
+					border-radius: 4px;
+					padding: 5px 10px;
+					cursor: pointer;
+					font-size: 12px;
+					transition: background-color 0.3s ease;
+				}
+				#timeline_toggle:hover {
+					background-color: var(--vscode-button-hoverBackground);
+				}
 				.tooltip {
 					padding: 1em;
 					position: absolute;
@@ -236,8 +278,17 @@ ${comment}
 					</div>
 				</div>
 				${commits}
+				<div id="timeline_container">
+					<input type="range" id="timeline" min="0" max="100" value="100">
+					<div id="timeline_markers"></div>
+				</div>
+				<button id="timeline_toggle">Hide Timeline</button>
 			</div>
 			<script>
+				const timelineContainer = document.getElementById('timeline_container');
+				const timelineMarkers = document.getElementById('timeline_markers');
+				const toggleButton = document.getElementById('timeline_toggle');
+
 				updateMinimap();
 				window.addEventListener('resize', updateMinimap);
 				document.querySelector('#content').addEventListener('scroll', updateMinimap);
@@ -248,6 +299,13 @@ ${comment}
 				});
 				document.querySelector('#minimap').addEventListener('mouseleave', panMinimapEnd);
 				${this.getToolipCode()}
+
+				let isVisible = true;
+				toggleButton.addEventListener('click', () => {
+					isVisible = !isVisible;
+					timelineContainer.classList.toggle('hidden', !isVisible);
+					toggleButton.textContent = isVisible ? 'Hide Timeline' : 'Show Timeline';
+				});
 			</script>
 		</body>
 		</html>`;
