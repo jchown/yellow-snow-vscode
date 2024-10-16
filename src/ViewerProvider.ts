@@ -196,8 +196,10 @@ ${comment}
 				}
 				#timeline_container {
 					position: fixed;
+					display: flex;
+					flex-flow: row nowrap;
 					bottom: 10px;
-					left: 50%;
+					left: 40%;
 					transform: translateX(-50%);
 					width: 60%;
 					background-color: var(--vscode-editor-background);
@@ -211,14 +213,35 @@ ${comment}
 				#timeline_container.hidden {
 					bottom: -100px;
 				}
+				#timeline_container_2 {
+					flex: 1;
+					padding: 0 1em;
+    		    }
+				.timeline_button {
+					flex: 0 0 50px;
+					background-color: var(--vscode-button-background);
+					color: var(--vscode-button-foreground);
+					border: none;
+					border-radius: 4px;
+					padding: 5px 10px;
+					cursor: pointer;
+					font-size: 12px;
+					transition: background-color 0.3s ease;
+				}
 				#timeline {
-					width: 100%;
-					height: 30px;
+					flex: 1;
     		    }
 		        #timeline_markers {
         		    position: relative;
 		            height: 20px;
 		        }
+				.timeline_marker {
+					position: absolute;
+					width: 2px;
+					height: 10px;
+					background-color: var(--vscode-editor-foreground);
+					bottom: 0;
+				}
 				#timeline_toggle {
 					position: fixed;
 					bottom: 10px;
@@ -279,8 +302,12 @@ ${comment}
 				</div>
 				${commits}
 				<div id="timeline_container">
-					<input type="range" id="timeline" min="0" max="100" value="100">
-					<div id="timeline_markers"></div>
+					<button id="prev_button" class="timeline_button" title="Previous">&lt;&lt;</button>
+					<div id="timeline_container_2">
+						<input type="range" id="timeline" min="0" max="100" value="100">
+						<div id="timeline_markers"></div>
+					</div>
+					<button id="next_button" class="timeline_button" title="Next">&gt;&gt;</button>
 				</div>
 				<button id="timeline_toggle">Hide Timeline</button>
 			</div>
@@ -305,6 +332,14 @@ ${comment}
 					isVisible = !isVisible;
 					timelineContainer.classList.toggle('hidden', !isVisible);
 					toggleButton.textContent = isVisible ? 'Hide Timeline' : 'Show Timeline';
+				});
+
+				const events = [0, 25, 50, 75, 100];
+				events.forEach(event => {
+					const marker = document.createElement('div');
+					marker.className = 'timeline_marker';
+					marker.style.left = event + '%';
+					timelineMarkers.appendChild(marker);
 				});
 			</script>
 		</body>
