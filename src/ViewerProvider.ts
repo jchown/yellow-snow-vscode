@@ -43,6 +43,17 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 
 			fs.readFile(document.uri.fsPath, 'utf8', (err, data) => {
 				webviewPanel.webview.html = this.getHtmlForWebview(data.split('\n'), gitHistory, webviewPanel.webview);
+
+				const listener = webviewPanel.webview.onDidReceiveMessage(
+					message => {
+						switch (message.command) {
+							case 'next':
+							case 'prev':
+								// Handle time change event
+								// updateEditorContent(message.time);
+								return;
+						}
+					});
 			});
 		}
 		catch (e) {
@@ -124,6 +135,19 @@ ${comment}
 			const timestamp = new Date(line.timestamp);
 			lines += this.getHtml(i, line, colorMap);
 			authors += `<div class='line commit commit_${gitHistory.lines[i].commit}'>${gitHistory.lines[i].author}</div>`;
+		}
+
+		var startTimestamp = gitHistory.changes[0].timestamp;
+		var endTimestamp = gitHistory.changes[gitHistory.changes.length - 1].timestamp;
+		var duration = endTimestamp - startTimestamp;
+
+		var timelineMarkers = {};
+		var timelineMarkerPercentages = "";
+		
+		for (var i = 0; i < gitHistory.changes.length; i++) {
+			const change = gitHistory.changes[i];
+			const percentage = (change.timestamp - startTimestamp) / duration * 100;
+			timelineMarkerPercentages += `${percentage},`;
 		}
 
 		const configuration = vscode.workspace.getConfiguration();
@@ -226,7 +250,6 @@ ${comment}
 					padding: 5px 10px;
 					cursor: pointer;
 					font-size: 12px;
-					transition: background-color 0.3s ease;
 				}
 				#timeline {
 					flex: 1;
@@ -302,18 +325,23 @@ ${comment}
 				</div>
 				${commits}
 				<div id="timeline_container">
-					<button id="prev_button" class="timeline_button" title="Previous">&lt;&lt;</button>
+					<button id="timeline_prev" class="timeline_button" title="Previous">&lt;&lt;</button>
 					<div id="timeline_container_2">
-						<input type="range" id="timeline" min="0" max="100" value="100">
+						<input type="range" id="timeline" min="0" max="100" value="100" style="width:100%">
 						<div id="timeline_markers"></div>
 					</div>
-					<button id="next_button" class="timeline_button" title="Next">&gt;&gt;</button>
+					<button id="timeline_next" class="timeline_button" title="Next">&gt;&gt;</button>
 				</div>
 				<button id="timeline_toggle">Hide Timeline</button>
 			</div>
 			<script>
+
+				const vscode = acquireVsCodeApi();
+
 				const timelineContainer = document.getElementById('timeline_container');
 				const timelineMarkers = document.getElementById('timeline_markers');
+				const timelineNext = document.getElementById('timeline_next');
+				const timelinePrev = document.getElementById('timeline_prev');
 				const toggleButton = document.getElementById('timeline_toggle');
 
 				updateMinimap();
@@ -334,12 +362,25 @@ ${comment}
 					toggleButton.textContent = isVisible ? 'Hide Timeline' : 'Show Timeline';
 				});
 
-				const events = [0, 25, 50, 75, 100];
+				const events = [${timelineMarkerPercentages}];
 				events.forEach(event => {
 					const marker = document.createElement('div');
 					marker.className = 'timeline_marker';
 					marker.style.left = event + '%';
 					timelineMarkers.appendChild(marker);
+				});
+
+				timelineNext.addEventListener('click', (event) => {
+					console.log('next');
+                	vscode.postMessage({
+						command: 'next'
+					});
+				});
+
+				timelinePrev.addEventListener('click', (event) => {
+					vscode.postMessage({
+						command: 'prev'
+					});
 				});
 			</script>
 		</body>
