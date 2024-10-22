@@ -40,6 +40,8 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 
 		try {
 			const gitHistory = new GitHistory(document.uri.fsPath);
+			const revisions: Record<string, GitHistory> = {};
+			var index = gitHistory.changes.length - 1;
 
 			fs.readFile(document.uri.fsPath, 'utf8', (err, data) => {
 				webviewPanel.webview.html = this.getHtmlForWebview(data.split('\n'), gitHistory, webviewPanel.webview);
@@ -51,6 +53,21 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 							case 'prev':
 								// Handle time change event
 								// updateEditorContent(message.time);
+
+								var nextIndex = index + (message.command === 'next' ? 1 : -1);
+								if (nextIndex < 0 || nextIndex >= gitHistory.changes.length) {
+									//	Do nothing
+									return;
+								}
+
+								const sha = gitHistory.getSha(nextIndex)!;
+								if (revisions[sha] === undefined) {
+									webviewPanel.webview.postMessage({ type: 'showLoading' });
+									revisions[sha] = new GitHistory(document.uri.fsPath, gitHistory, sha);
+									webviewPanel.webview.postMessage({ type: 'hideLoading' });
+								}
+
+								index = nextIndex;
 								return;
 						}
 					});
@@ -301,12 +318,59 @@ ${comment}
 					padding: 0;
 				}
 				${colors}
+
+				#loading-overlay {
+					position: fixed;
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
+					background-color: var(--vscode-editor-background);
+					opacity: 0.9;
+					display: none;
+					justify-content: center;
+					align-items: center;
+					z-index: 9999;
+				}
+		
+				#loading-overlay.visible {
+					display: flex;
+				}
+		
+				.spinner-container {
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					gap: 12px;
+				}
+		
+				.spinner {
+					animation: spin 1s linear infinite;
+				}
+		
+				.spinner-text {
+					color: var(--vscode-foreground);
+					font-size: var(--vscode-font-size);
+					font-family: var(--vscode-font-family);
+				}
+		
+				@keyframes spin {
+					100% {
+						transform: rotate(360deg);
+					}
+				}
 			</style>
 			<script>
 				${this.getMinimapCode(gitHistory.lines.length)}
 			</script>
 		</head>
 		<body>
+		    <div id="loading-overlay">
+				<div class="spinner-container">
+					<i class="codicon codicon-loading spinner"></i>
+					<span class="spinner-text">Processing...</span>
+				</div>
+			</div>
 			<div id="container">
 				<div id="content">
 					<div id="authors">
@@ -371,16 +435,43 @@ ${comment}
 				});
 
 				timelineNext.addEventListener('click', (event) => {
-					console.log('next');
-                	vscode.postMessage({
-						command: 'next'
-					});
+                	vscode.postMessage({ command: 'next' });
 				});
 
 				timelinePrev.addEventListener('click', (event) => {
-					vscode.postMessage({
-						command: 'prev'
+					vscode.postMessage({ command: 'prev' });
+				});
+
+				function showLoading(message = 'Processing...') {
+					const overlay = document.getElementById('loading-overlay');
+					const text = overlay.querySelector('.spinner-text');
+					text.textContent = message;
+					overlay.classList.add('visible');
+					
+					document.querySelectorAll('button, input, select').forEach(element => {
+						element.disabled = true;
 					});
+				}
+
+				function hideLoading() {
+					const overlay = document.getElementById('loading-overlay');
+					overlay.classList.remove('visible');
+					
+					document.querySelectorAll('button, input, select').forEach(element => {
+						element.disabled = false;
+					});
+				}
+
+				window.addEventListener('message', event => {
+					const message = event.data;
+					switch (message.type) {
+						case 'showLoading':
+							showLoading(message.message);
+							break;
+						case 'hideLoading':
+							hideLoading();
+							break;
+					}
 				});
 			</script>
 		</body>

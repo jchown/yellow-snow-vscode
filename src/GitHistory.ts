@@ -3,15 +3,28 @@ import { LineFile } from "./LineFile";
 
 export class GitHistory {
     
+    // Every line in the file, with the associated commit change
     lines: LineFile[];
+
+    // Every known change to the file. Changes that have been obliterated, i.e. 
+    // have left no trace in the current version of the file, are not included.
     changes: Change[];
 
-    constructor(filename: string) {
+    constructor(filename: string, successor?: GitHistory, sha?: string) {
 	
         const repoRoot = this.getRepoRoot(filename);
-        const relPath = filename.substring(repoRoot.length + 1);
+        var relPath = filename.substring(repoRoot.length + 1);
+
+        if (sha !== undefined) {
+          relPath = successor!.getShaFilename(sha!);
+        }
+
         const gitCommand = "git";
-        const args = "annotate -p -w --stat";
+        var args = "annotate -p -w --stat";
+
+        if (sha !== undefined) {
+            args += " " + sha;
+        }
     
         const execSync = require('child_process').execSync;
         const command = `${gitCommand} ${args} "${relPath}"`;
@@ -117,4 +130,11 @@ export class GitHistory {
         return path.dirname(filename);
     }
 
+    getSha(index: number): string | undefined {
+      return this.changes[index].sha;
+    }
+  
+    getShaFilename(sha: string): string {
+      return this.changes.find((commit) => commit.sha === sha)!.filename;
+    }  
 }
