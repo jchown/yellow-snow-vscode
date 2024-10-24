@@ -67,6 +67,14 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 									webviewPanel.webview.postMessage({ type: 'hideLoading' });
 								}
 
+								var startTimestamp = gitHistory.changes[0].timestamp;
+								var endTimestamp = gitHistory.changes[gitHistory.changes.length - 1].timestamp;
+								var duration = endTimestamp - startTimestamp;
+						
+								const change = gitHistory.changes[index];
+								const percentage = (change.timestamp - startTimestamp) / duration * 100;
+								
+								webviewPanel.webview.postMessage({ type: 'setProgress', percentage: percentage });
 								index = nextIndex;
 								return;
 						}
@@ -462,6 +470,11 @@ ${comment}
 					});
 				}
 
+				function setProgress(percentage) {
+					const timeline = document.getElementById('timeline');
+					timeline.value = percentage;
+				}
+
 				window.addEventListener('message', event => {
 					const message = event.data;
 					switch (message.type) {
@@ -470,6 +483,9 @@ ${comment}
 							break;
 						case 'hideLoading':
 							hideLoading();
+							break;
+						case 'setProgress':
+							setProgress(message.percentage);
 							break;
 					}
 				});
