@@ -67,6 +67,16 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 									webviewPanel.webview.postMessage({ type: 'hideLoading' });
 								}
 
+								const revision = revisions[sha];
+								const commits = this.getCommitsHtml(revision);
+
+								webviewPanel.webview.postMessage({
+									type: 'setContents',
+									authors: revision.lines.map((line) => `<div class='line commit commit_${line.commit}'>${line.author}</div>`).join(''),
+									lines: revision.lines.map((line, index) => this.getHtml(index, line, this.calculateColorMap(new Set(revision.lines.map((line) => line.timestamp)))).replace(/line_[0-9]+/g, `line_${index}`)).join(''),
+									commits: commits
+								});
+
 								var startTimestamp = gitHistory.changes[0].timestamp;
 								var endTimestamp = gitHistory.changes[gitHistory.changes.length - 1].timestamp;
 								var duration = endTimestamp - startTimestamp;
@@ -140,27 +150,9 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 			colors += `.color_${i} { color: ${fgCol}; background-color: ${bgCol}; }\n`;
 		};
 
-		var commits = "";
-		for (var i = 0; i < gitHistory.changes.length; i++) {
-			const change = gitHistory.changes[i];
-			const timestamp = new Date(change.timestamp * 1000);
-			const editor = this.escapeHtml(`${change.editor} ${change.editorEmail}`);
-			const comment = this.escapeHtml(change.comment);
-			commits += `
-		<div class="tooltip" id="commit_${change.sha}">${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}
-${editor}
-
-${comment}
-</div>`;
-		};
-
-		var lines = "", authors = "";
-		for (var i = 0; i < gitHistory.lines.length; i++) {
-			const line = gitHistory.lines[i];
-			const timestamp = new Date(line.timestamp);
-			lines += this.getHtml(i, line, colorMap);
-			authors += `<div class='line commit commit_${gitHistory.lines[i].commit}'>${gitHistory.lines[i].author}</div>`;
-		}
+		var commits = this.getCommitsHtml(gitHistory);
+		var lines = this.getLinesHtml(gitHistory, colorMap, theme, commits);
+		var authors = this.getAuthorsHtml(gitHistory);
 
 		var startTimestamp = gitHistory.changes[0].timestamp;
 		var endTimestamp = gitHistory.changes[gitHistory.changes.length - 1].timestamp;
@@ -395,7 +387,9 @@ ${comment}
 					<div id="visible_region">
 					</div>
 				</div>
-				${commits}
+				<div id="commits">
+					${commits}
+				</div>	
 				<div id="timeline_container">
 					<button id="timeline_prev" class="timeline_button" title="Previous">&lt;&lt;</button>
 					<div id="timeline_container_2">
@@ -487,6 +481,12 @@ ${comment}
 						case 'setProgress':
 							setProgress(message.percentage);
 							break;
+						case 'setContents':
+							document.querySelector('#authors').innerHTML = message.authors;
+							document.querySelector('#text').innerHTML = message.lines;
+							document.querySelector('#minimap').innerHTML = message.lines;
+							document.querySelector('#commits').innerHTML = message.commits;
+							break;
 					}
 				});
 			</script>
@@ -494,6 +494,43 @@ ${comment}
 		</html>`;
 	}
 
+	getCommitsHtml(gitHistory: GitHistory): string {
+		var commits = "";
+		for (var i = 0; i < gitHistory.changes.length; i++) {
+			const change = gitHistory.changes[i];
+			const timestamp = new Date(change.timestamp * 1000);
+			const editor = this.escapeHtml(`${change.editor} ${change.editorEmail}`);
+			const comment = this.escapeHtml(change.comment);
+			commits += `
+		<div class="tooltip" id="commit_${change.sha}">${timestamp.toLocaleDateString()} ${timestamp.toLocaleTimeString()}
+${editor}
+
+${comment}
+</div>`;
+		};
+
+		return commits;
+	}
+
+	getAuthorsHtml(gitHistory: GitHistory): string {
+		var authors = "";
+		for (var i = 0; i < gitHistory.lines.length; i++) {
+			const line = gitHistory.lines[i];
+			const timestamp = new Date(line.timestamp);
+			authors += `<div class='line commit commit_${gitHistory.lines[i].commit}'>${gitHistory.lines[i].author}</div>`;
+		}
+		return authors;
+	}
+
+	getLinesHtml(gitHistory: GitHistory, colorMap: Map<number, number>, theme: Theme, commits: string): string {
+		var lines = "";
+		for (var i = 0; i < gitHistory.lines.length; i++) {
+			const line = gitHistory.lines[i];
+			lines += this.getHtml(i, line, colorMap);
+		}
+		return lines;
+	}
+	
 	getMinimapCode(textLength: number): string {
 		return `
 		function updateMinimap() {
