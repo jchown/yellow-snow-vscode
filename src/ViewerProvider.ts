@@ -361,7 +361,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				}
 			</style>
 			<script>
-				${this.getMinimapCode(gitHistory.lines.length)}
+				${this.getMinimapCode()}
 			</script>
 		</head>
 		<body>
@@ -486,6 +486,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 							document.querySelector('#text').innerHTML = message.lines;
 							document.querySelector('#minimap').innerHTML = message.lines;
 							document.querySelector('#commits').innerHTML = message.commits;
+							updateMinimap();
 							break;
 					}
 				});
@@ -531,7 +532,7 @@ ${comment}
 		return lines;
 	}
 	
-	getMinimapCode(textLength: number): string {
+	getMinimapCode(): string {
 		return `
 		function updateMinimap() {
 			
@@ -566,7 +567,6 @@ ${comment}
 			}
 		}
 
-		const textLength = ${textLength};
 		var panning = false;
 
 		function panMinimapStart(event) {
@@ -581,6 +581,7 @@ ${comment}
 		function panMinimap(event) {
 			if (!panning)
 				return;
+
 			var line = event.target;
 			line.classList.forEach(c => {
 				if (!c.startsWith("line_"))
@@ -590,7 +591,7 @@ ${comment}
 				const content = document.querySelector('#content');
 				const contentHeight = content.scrollHeight;
 
-				console.log(contentHeight, lineNumber, textLength);
+				var lineHeight =  parseInt(document.querySelector('#text').style.lineHeight); 
 
 				content.scrollTop = Math.max(0, contentHeight * lineNumber / textLength - content.clientHeight / 2);
 			});
