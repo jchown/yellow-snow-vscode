@@ -2,7 +2,11 @@ import { Change } from "./Change";
 import { LineFile } from "./LineFile";
 
 export class GitHistory {
-    
+  
+    //  The filename of the file
+
+    filename: string;
+
     // Every line in the file, with the associated commit change
     lines: LineFile[];
 
@@ -12,6 +16,8 @@ export class GitHistory {
 
     constructor(filename: string, successor?: GitHistory, sha?: string) {
 	
+        this.filename = filename;
+
         const repoRoot = this.getRepoRoot(filename);
         var relPath = filename.substring(repoRoot.length + 1);
 

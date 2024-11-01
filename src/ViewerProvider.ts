@@ -60,32 +60,36 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 									return;
 								}
 
-								const sha = gitHistory.getSha(nextIndex)!;
-								if (revisions[sha] === undefined) {
-									webviewPanel.webview.postMessage({ type: 'showLoading' });
-									revisions[sha] = new GitHistory(document.uri.fsPath, gitHistory, sha);
-									webviewPanel.webview.postMessage({ type: 'hideLoading' });
-								}
-
-								const revision = revisions[sha];
-								const commits = this.getCommitsHtml(revision);
-
-								webviewPanel.webview.postMessage({
-									type: 'setContents',
-									authors: revision.lines.map((line) => `<div class='line commit commit_${line.commit}'>${line.author}</div>`).join(''),
-									lines: revision.lines.map((line, index) => this.getHtml(index, line, this.calculateColorMap(new Set(revision.lines.map((line) => line.timestamp)))).replace(/line_[0-9]+/g, `line_${index}`)).join(''),
-									commits: commits
-								});
-
-								var startTimestamp = gitHistory.changes[0].timestamp;
-								var endTimestamp = gitHistory.changes[gitHistory.changes.length - 1].timestamp;
-								var duration = endTimestamp - startTimestamp;
-						
-								const change = gitHistory.changes[index];
-								const percentage = (change.timestamp - startTimestamp) / duration * 100;
+								const percentage = this.show(gitHistory, revisions, nextIndex, webviewPanel.webview);
 								
 								webviewPanel.webview.postMessage({ type: 'setProgress', percentage: percentage });
+
 								index = nextIndex;
+								return;
+							case 'seek':
+								const value = message.value;
+
+								const startTimestamp = gitHistory.changes[0].timestamp;
+								const endTimestamp = gitHistory.changes[gitHistory.changes.length - 1].timestamp;
+								const duration = endTimestamp - startTimestamp;
+
+								// Find nearest timestamp
+
+								var nextIndex = -1;
+								var minDiff = 1 << 62;
+								for (var i = 0; i < gitHistory.changes.length; i++) {
+									const change = gitHistory.changes[i];
+									const diff = Math.abs((change.timestamp - startTimestamp) / duration * 100 - value);
+									if (diff < minDiff) {
+										minDiff = diff;
+										nextIndex = i;
+									}
+								}
+
+								if (nextIndex !== index) {
+									this.show(gitHistory, revisions, nextIndex, webviewPanel.webview);
+									index = nextIndex;
+								}
 								return;
 						}
 					});
@@ -96,6 +100,35 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 
 			webviewPanel.webview.html = `<html><body>Failed to load file: ${e}</body></html>`;
 		}            
+	}
+
+	show(gitHistory: GitHistory, revisions: Record<string, GitHistory>, nextIndex: number, webview: vscode.Webview): number {
+
+		const sha = gitHistory.getSha(nextIndex)!;
+		if (revisions[sha] === undefined) {
+			webview.postMessage({ type: 'showLoading' });
+			revisions[sha] = new GitHistory(gitHistory.filename, gitHistory, sha);
+			webview.postMessage({ type: 'hideLoading' });
+		}
+
+		const revision = revisions[sha];
+		const commits = this.getCommitsHtml(revision);
+
+		webview.postMessage({
+			type: 'setContents',
+			authors: revision.lines.map((line) => `<div class='line commit commit_${line.commit}'>${line.author}</div>`).join(''),
+			lines: revision.lines.map((line, index) => this.getHtml(index, line, this.calculateColorMap(new Set(revision.lines.map((line) => line.timestamp)))).replace(/line_[0-9]+/g, `line_${index}`)).join(''),
+			commits: commits
+		});
+
+		var startTimestamp = gitHistory.changes[0].timestamp;
+		var endTimestamp = gitHistory.changes[gitHistory.changes.length - 1].timestamp;
+		var duration = endTimestamp - startTimestamp;
+
+		const change = gitHistory.changes[nextIndex];
+		const percentage = (change.timestamp - startTimestamp) / duration * 100;
+
+		return percentage;
 	}
 
 	getLoading(): string {
@@ -404,6 +437,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 
 				const vscode = acquireVsCodeApi();
 
+				const timeline = document.getElementById('timeline');
 				const timelineContainer = document.getElementById('timeline_container');
 				const timelineMarkers = document.getElementById('timeline_markers');
 				const timelineNext = document.getElementById('timeline_next');
@@ -442,6 +476,14 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 
 				timelinePrev.addEventListener('click', (event) => {
 					vscode.postMessage({ command: 'prev' });
+				});
+				
+				timeline.addEventListener('input', (event) => {
+					const value = parseInt(event.target.value);
+					vscode.postMessage({
+						command: 'seek',
+						value: value
+					});
 				});
 
 				function showLoading(message = 'Processing...') {
