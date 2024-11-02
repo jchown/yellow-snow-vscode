@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.12.0]
+
+- Add timeline scoll bar.
+
 ## [0.11.0]
 
 - Fix for spaces in filenames.
@@ -12,7 +16,7 @@
 ## [0.9.0]
 
 - Minimap scrolling.
-- Auto-theme selection
+- Auto-theme selection.
 
 ## [0.8.1]
 
