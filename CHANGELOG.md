@@ -3,6 +3,7 @@
 ## [0.13.0]
 
 - Add timeline default visibility option.
+- Fix for minimap after timeline scroll.
 
 ## [0.12.0]
 
