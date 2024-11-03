@@ -18,11 +18,12 @@ To open a text file in this view, use the hotkey* or the `Re-open Editor With...
 
 ## Settings
 
-This extension currently contributes one setting:
+This extension currently contributes two settings:
 
 * `yellowSnow.theme`: The colour theme to use.
+* `yellowSnow.timelineMode`: Whether to initially show the timeline controls.
 
-By default this will be `AUTO`, which selects the Yellow Snow theme when the editor is set to a light theme, and Purple Stain when it is set to dark.
+The theme by default is `AUTO`, which selects the Yellow Snow theme when the editor is set to a light theme, and Purple Stain when it is set to dark.
 
 |YS - Yellow Snow|PS - Purple Stain|
 |-|-|

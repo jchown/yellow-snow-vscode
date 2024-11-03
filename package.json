@@ -56,6 +56,25 @@
             "White to yellow 'light' color scheme",
             "Black to purple 'dark' color scheme"
           ]
+        },
+        "yellowSnow.timelineMode": {
+          "type": "string",
+          "default": "SHOWN",
+          "enum": [
+            "SHOWN",
+            "HIDDEN",
+            "DISABLED"
+          ],
+          "enumItemLabels": [
+            "Shown by default",
+            "Hidden by default",
+            "Always hidden"
+          ],
+          "enumDescriptions": [
+            "Show the timeline by default, but allow it to be hidden",
+            "Hide the timeline by default, but allow it to be shown",
+            "Always hide the timeline"
+          ]
         }
       }
     },

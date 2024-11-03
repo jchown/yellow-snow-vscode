@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.13.0]
+
+- Add timeline default visibility option.
+
 ## [0.12.0]
 
 - Add timeline scoll bar.

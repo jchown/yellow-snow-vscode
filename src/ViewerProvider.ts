@@ -6,6 +6,7 @@ import { YellowSnowView } from './YellowSnowView';
 import { GitHistory } from './GitHistory';
 import { LineFile } from './LineFile';
 import { ThemeID } from './ThemeID';
+import { TimelineMode } from './TimelineMode';
 import { Theme } from './Theme';
 import { Color } from './Color';
 
@@ -161,6 +162,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 
 		let extConfig = vscode.workspace.getConfiguration("yellowSnow");
 		let themeID = extConfig.get<ThemeID>("theme") || ThemeID.Auto;
+		let timelineMode = extConfig.get<TimelineMode>("timelineMode") || TimelineMode.Shown;
 
 		if (themeID === ThemeID.Auto) {
 			const themeName = vscode.window.activeColorTheme.kind;
@@ -423,7 +425,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				<div id="commits">
 					${commits}
 				</div>	
-				<div id="timeline_container">
+			<div id="timeline_container" class="${timelineMode !== TimelineMode.Shown ? 'hidden':''}">
 					<button id="timeline_prev" class="timeline_button" title="Previous">&lt;&lt;</button>
 					<div id="timeline_container_2">
 						<input type="range" id="timeline" min="0" max="100" value="100" style="width:100%">
@@ -431,7 +433,8 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 					</div>
 					<button id="timeline_next" class="timeline_button" title="Next">&gt;&gt;</button>
 				</div>
-				<button id="timeline_toggle">Hide Timeline</button>
+				${timelineMode === TimelineMode.Hidden ? '<button id="timeline_toggle">&lt;</button>' : ''}
+				${timelineMode === TimelineMode.Shown ? '<button id="timeline_toggle">Hide Timeline</button>' : ''}
 			</div>
 			<script>
 
@@ -455,12 +458,14 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				document.querySelector('#minimap').addEventListener('mouseleave', panMinimapEnd);
 				${this.getToolipCode()}
 
-				let isVisible = true;
-				toggleButton.addEventListener('click', () => {
-					isVisible = !isVisible;
-					timelineContainer.classList.toggle('hidden', !isVisible);
-					toggleButton.textContent = isVisible ? 'Hide Timeline' : 'Show Timeline';
-				});
+				let isVisible = ${timelineMode === TimelineMode.Shown ? 'true' : 'false'};
+				if (toggleButton !== null) {
+					toggleButton.addEventListener('click', () => {
+						isVisible = !isVisible;
+						timelineContainer.classList.toggle('hidden', !isVisible);
+						toggleButton.textContent = isVisible ? 'Hide Timeline' : '<';
+					});
+				}		
 
 				const events = [${timelineMarkerPercentages}];
 				events.forEach(event => {
@@ -633,7 +638,8 @@ ${comment}
 				const content = document.querySelector('#content');
 				const contentHeight = content.scrollHeight;
 
-				var lineHeight =  parseInt(document.querySelector('#text').style.lineHeight); 
+				var textLength = parseInt(document.querySelector('#text').childElementCount); 
+				console.log("TL: " + textLength);
 
 				content.scrollTop = Math.max(0, contentHeight * lineNumber / textLength - content.clientHeight / 2);
 			});
