@@ -425,7 +425,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				<div id="commits">
 					${commits}
 				</div>	
-			<div id="timeline_container" class="${timelineMode !== TimelineMode.Shown ? 'hidden':''}">
+				<div id="timeline_container" class="${timelineMode !== TimelineMode.Shown ? 'hidden':''}">
 					<button id="timeline_prev" class="timeline_button" title="Previous">&lt;&lt;</button>
 					<div id="timeline_container_2">
 						<input type="range" id="timeline" min="0" max="100" value="100" style="width:100%">
@@ -448,13 +448,10 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 				const toggleButton = document.getElementById('timeline_toggle');
 
 				updateMinimap();
+				onMinimapPopulated();
+				
 				window.addEventListener('resize', updateMinimap);
 				document.querySelector('#content').addEventListener('scroll', updateMinimap);
-				document.querySelectorAll('#minimap .line').forEach(line => {
-					line.addEventListener('mousedown', panMinimapStart);
-					line.addEventListener('mousemove', panMinimap);
-					line.addEventListener('mouseup', panMinimapEnd);
-				});
 				document.querySelector('#minimap').addEventListener('mouseleave', panMinimapEnd);
 				${this.getToolipCode()}
 
@@ -534,6 +531,7 @@ export class ViewerProvider implements vscode.CustomReadonlyEditorProvider<Yello
 							document.querySelector('#minimap').innerHTML = message.lines;
 							document.querySelector('#commits').innerHTML = message.commits;
 							updateMinimap();
+							onMinimapPopulated();
 							break;
 					}
 				});
@@ -612,6 +610,16 @@ ${comment}
 					minimapContainer.classList.add('hidden');
 				}
 			}
+		}
+
+		function onMinimapPopulated() {
+
+			document.querySelectorAll('#minimap .line').forEach(line => {
+				line.addEventListener('mousedown', panMinimapStart);
+				line.addEventListener('mousemove', panMinimap);
+				line.addEventListener('mouseup', panMinimapEnd);
+			});
+
 		}
 
 		var panning = false;
