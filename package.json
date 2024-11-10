@@ -81,7 +81,7 @@
     "keybindings": [
       {
         "command": "yellowSnow.openView",
-        "key": "ctrl+y",
+        "key": "alt+y",
         "mac": "cmd+y"
       }
     ]
