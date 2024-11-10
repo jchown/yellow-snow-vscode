@@ -18,17 +18,19 @@ export class GitHistory {
 	
         this.filename = filename;
 
+        const isLatest = (sha === undefined || sha === "0000000000000000000000000000000000000000");
+
         const repoRoot = this.getRepoRoot(filename);
         var relPath = filename.substring(repoRoot.length + 1);
 
-        if (sha !== undefined) {
+        if (!isLatest) {
           relPath = successor!.getShaFilename(sha!);
         }
 
         const gitCommand = "git";
         var args = "annotate -p -w --stat";
 
-        if (sha !== undefined) {
+        if (!isLatest) {
             args += " " + sha;
         }
     

@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.14.0]
+
+- Fix for Issue #2: Stepping the timeline to the current version would fail if the current version had edits.
+
 ## [0.13.0]
 
 - Add timeline default visibility option.
